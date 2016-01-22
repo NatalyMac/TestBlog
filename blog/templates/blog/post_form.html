@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %} 
+<div class="row"><a href="/" class="btn btn-info" role="button">Список сообщений</a></div>
+<div class="well" style="margin:auto; width:50%; text-align:center">
+<h1>Добавить новое сообщение</h1>
+
+<form method="POST" action="">
+{% csrf_token %}
+{{form.as_p}}
+<input type="submit" class="btn btn-primary" value="Опубликовать">
+</form>
+
+</div>
+
+{% endblock content %}

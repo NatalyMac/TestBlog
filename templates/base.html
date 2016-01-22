@@ -1,0 +1,74 @@
+{% load sekizai_tags %}
+{% load url from future %} 
+{% load i18n %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Блог {% block title %}{% endblock %}</title>
+        <meta charset="UTF-8">
+        {% render_block "css" %}
+        <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+        <link rel="stylesheet" href="/css/main.css">
+        <style>
+               #but{float:right;}
+               .glyphicon{font-size: 16px; color:#00bfff;}
+               ul,li {line-height: 1; list-style: none; vertical-align: middle;}
+               .footer{margin-top: 20px}
+
+        </style>
+
+ 
+    </head>
+    
+    <body>
+    <div class="container">
+    <div class="row header well">
+        <h4>Регистрация пользователя</h4>
+        
+        {% if user.is_authenticated %}
+        
+            <div class="col-md-12">
+                     <a href="/post/new" class="btn btn-info" id="but" role="button">Написать новое сообщение</a>
+                     
+                      
+                     <span> {{user.username}}</span>|
+                     <a href="{% url "users:auth_logout" %}">{% trans "Logout" %}</a>
+            </div>
+        
+
+            {%else%}
+
+
+
+    <div class="col-xs-6" id="user-toolbar">
+         <a href="{% url 'social:begin' 'facebook' %}?next={{ request.path }}">{% trans "via Facebook" %}</a> |
+         <a href="{% url "users:auth_login" %}">{% trans "Login" %}</a> |
+         <!--<a href="{% url "users:registration_register" %}">{% trans "Register" %}</a>-->
+    </div>
+            {% endif %}
+
+    </div>
+
+
+        {% block content %}
+        
+        {% endblock content %}
+        {% addtoblock "js" %}
+            <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.js"></script>
+        {% endaddtoblock %}
+        {% render_block "js" %}
+
+<div class="row well footer">
+
+        <p> &copy;Тестовая задача 2015</p>
+</div>
+
+</div>
+
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+</body>
+</html>

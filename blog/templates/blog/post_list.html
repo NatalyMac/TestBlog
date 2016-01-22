@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% load threadedcommentstags sekizai_tags %}
+{% load i18n %}
+{% load url from future %} 
+
+{% block title %}
+    - Home
+{% endblock title %}
+
+{% block content %}
+{% addtoblock "js" %}
+    <script type="text/javascript">
+    function show_reply_form(comment_id) {
+        $("#reply-" + comment_id).slideDown();
+        $("#reply-link-" + comment_id).replaceWith("<a id='reply-link-" + comment_id
+            + "' href='javascript:hide_reply_form(" + comment_id + ")'>Отмена</a>");
+    }
+    function hide_reply_form(comment_id) {
+        $("#reply-" + comment_id).slideUp();
+        $("#reply-link-" + comment_id).replaceWith("<a id='reply-link-" + comment_id
+            + "' href='javascript:show_reply_form(" + comment_id + ")'>Ответить</a>");
+    }
+
+    
+    /*function show_reply_form_post(post_id) {
+        $("#reply-post-" + post_id).slideDown();
+        $("#reply-link-post-" + post_id).replaceWith("<a id='reply-link-post-" + post_id
+            + "' href='javascript:hide_reply_form_post(" + post_id + ")'>Отмена</a>");
+    }
+    function hide_reply_form_post(post_id) {
+        $("#reply-post-" + post_id).slideUp();
+        $("#reply-link-post-" + post_id).replaceWith("<a id='reply-link-post-" + post_id
+            + "' href='javascript:show_reply_form_post(" + post_id + ")'>Ответить</a>");
+    } need to fix*/
+    </script>
+{% endaddtoblock %}
+
+ 
+  <div class="container">
+        
+            
+            <!--<div class="col-md-12 well">
+        
+                     <input type="text" class="col-md-10 panel-default" placeholder="Введите сообщение" value="" />
+                     <a href="/new" class="btn btn-info" id="but" role="button">Написать новое сообщение</a>
+                     <input type="submit" class="btn btn-primary" value="Добавить сообщение" ></a>
+            </div>-->
+          
+
+
+<ul>
+{% for post in posts %}
+    <div class="col-md-12 well">
+       <li>
+           <a href="{{ post.get_absolute_url }}">
+           <h4><span class="glyphicon glyphicon-triangle-right"></span> 
+           <span>(</span>{{ post.date_posted|date }}<span>)</span> {{ post.title }}<span> {{ user }} </span> 
+           </a> <span> {{post.body}}</span>
+           </h4>
+      
+
+           {% get_threaded_comment_form as form %}
+
+           {% if user.is_authenticated %}
+           
+           <form id="reply-post-{{ post.slug }}"  method="POST" style="display" action="{% get_comment_url post %}">
+                {% csrf_token %}
+            
+                {% for field in form %}
+                
+                        {% if field.is_hidden %}
+                            <div>{{ field }}</div>
+                
+                        {% else %}
+                    
+                            {% if field.name != "markup" %}
+                                   {% if field.errors %}{{ field.errors }}{% endif %}
+                        
+                            
+                                   <input type="text" name="comment" id="id_comment-{{ post.slug }}"/>
+                                    {# <p>{{ field.label }}<br />{{ field }}</p> #} 
+
+                            {% endif %}
+                        {% endif %}
+                {% endfor %}
+                <input type="submit" value="Отправить" />
+                
+                </form>
+            
+                <a id="reply-link-post-{{ post.slug }}" href="javascript:show_reply_form_post('{{ post.slug }}')">Ответить</a>
+
+
+              {% else %}
+        
+               {{form.target_object}}
+               <div>
+                    Вы не можете оставлять комментарии. Зарегистрируйтесь, 
+                    <a href="{% url 'social:begin' 'facebook' %}?next={{ request.path }}"> {% trans "via Facebook" %} </a>
+                    пожалуйста <br />
+                </div>
+
+           {% endif %} 
+
+
+
+    {% get_comment_count for post as comment_count %}
+    <!--<h3>Сообщения ({{ comment_count }})</h3>-->
+    {% get_threaded_comment_tree for post as tree %}
+    
+    {% for comment in tree %}
+    <div style="margin-left: {{ comment.depth }}em;" class="comment panel">
+        <div>
+            <br />
+               <!-- <a class="username" href="{# comment.user.get_profile.get_absolute_url #}">{{ comment.user }}</a> -->
+            <span class="glyphicon glyphicon glyphicon-menu-hamburger"></span>
+            <time><span>(</span>{{ comment.date_submitted }}<span>)</span></time> <span>{{ comment.user }}</span>
+               {{ comment.comment|safe }}
+        </div>
+        <form id="reply-{{ comment.id }}" style="display:none;" method="POST" action="{% get_comment_url post comment %}">
+                {% csrf_token %}
+                {% get_threaded_comment_form as form %}
+                {% for field in form %}
+                    {% if field.is_hidden %}
+                        <div>{{ field }}</div>
+                    {% else %}
+                        {% if field.name == "comment" %}
+                            {% if field.errors %}{{ field.errors }}{% endif %}
+                            <br />
+                            <input type="text" name="comment" id="id_comment-{{ comment.id }}"/>
+                            {# <p>{{ field.label }}<br />{{ field }}</p> #}
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+                <input type="submit" value="Опубликовать" />
+        </form>
+            {% if user.is_authenticated %} 
+            <br />
+            <a id="reply-link-{{ comment.id }}" href="javascript:show_reply_form('{{ comment.id }}')">Ответить</a>
+            {% endif %}
+        </div>
+        <br />
+    {% endfor %}
+    </li>
+    </div>
+
+    {% empty %}
+    
+    <p>Нет записей.</p>
+
+    {% endfor %}
+   </ul>
+
+</div>
+{% endblock content %}
